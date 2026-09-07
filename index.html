@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manish Kulariya</title>
+<meta name="description" content="Manish Kulariya. Ten years pulling signal out of noise: ECG, retinas, video, news, and now agents. Founder of NewzTiQ (2024 to 2026). Building Hybris and ZapClaw in Rust.">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Manish Kulariya">
+<meta property="og:description" content="Ten years pulling signal out of noise. ECG, retinas, video, news, and now agents.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Crect width='8' height='8' fill='%23000'/%3E%3Cpath d='M1 1h1v1H1zM3 1h1v1H3zM5 2h1v1H5zM2 3h1v1H2zM6 3h1v1H6zM1 5h1v1H1zM4 4h1v1H4zM3 6h1v1H3zM6 6h1v1H6z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Martian+Mono:wght@500;700&family=Newsreader:ital,opsz,wght@0,6..72,200;0,6..72,300;0,6..72,400;1,6..72,300&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SINGLE CHANNEL
+   Palette is one channel wide. No hue anywhere, on purpose.
+   ============================================================ */
+:root{
+  --black:#000000;
+  --coal:#0b0b0b;
+  --iron:#1c1c1c;
+  --ash:#3d3d3d;
+  --slate:#6e6e6e;
+  --smoke:#a0a0a0;
+  --bone:#d6d6d6;
+  --white:#ffffff;
+
+  --display:"Martian Mono","IBM Plex Mono",ui-monospace,monospace;
+  --body:"Newsreader",Georgia,"Times New Roman",serif;
+  --util:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --gut:clamp(20px,5vw,84px);
+  --rail:76px;
+  --band:clamp(72px,11vh,140px);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;
+  background:var(--black);
+  color:var(--smoke);
+  font-family:var(--body);
+  font-size:clamp(16px,1.05vw,18px);
+  line-height:1.7;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--white);color:var(--black)}
+
+/* --- film grain over the whole single channel --- */
+.grain{
+  position:fixed;inset:-50%;
+  z-index:9;pointer-events:none;
+  opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:drift 7s steps(6) infinite;
+}
+@keyframes drift{
+  0%{transform:translate(0,0)}   20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)} 60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,1%)} 100%{transform:translate(0,0)}
+}
+.vig{position:fixed;inset:0;z-index:8;pointer-events:none;
+  background:radial-gradient(125% 95% at 50% 40%,transparent 58%,rgba(0,0,0,.34) 100%)}
+
+/* --- fixed left rail: a ruler for the page --- */
+.rail{
+  position:fixed;left:0;top:0;bottom:0;width:var(--rail);
+  z-index:20;pointer-events:none;
+  display:none;
+}
+.rail:before{content:"";position:absolute;left:calc(var(--rail) - 1px);top:0;bottom:0;width:1px;background:var(--iron)}
+.rail-mark{
+  position:absolute;left:calc(var(--rail) - 1px);width:13px;height:1px;background:var(--white);
+  top:0;transform:translateY(0);will-change:transform;
+}
+.rail-txt{
+  position:absolute;left:14px;top:50%;
+  transform:rotate(-90deg);transform-origin:0 0;
+  white-space:nowrap;
+  font-family:var(--util);font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--ash);
+}
+.rail-pct{
+  position:absolute;left:16px;bottom:22px;
+  font-family:var(--util);font-size:10px;letter-spacing:.2em;color:var(--ash);
+}
+@media (min-width:1080px){.rail{display:block} body{padding-left:var(--rail)}}
+
+/* --- top bar, arrives only after the hero has resolved --- */
+.bar{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px var(--gut);
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--iron);
+  font-family:var(--util);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  opacity:0;transform:translateY(-100%);
+  transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.bar.on{opacity:1;transform:none}
+@media (min-width:1080px){.bar{left:var(--rail)}}
+.bar-name{color:var(--white);letter-spacing:.26em}
+.bar-nav{display:flex;gap:22px}
+.bar-nav a{color:var(--slate);text-decoration:none;transition:color .2s}
+.bar-nav a:hover,.bar-nav a:focus-visible{color:var(--white)}
+@media (max-width:719px){.bar-nav a:not(.keep){display:none}}
+
+/* --- hero --- */
+.hero{position:relative;height:min(92svh,900px);min-height:520px;width:100%;overflow:hidden}
+@media (max-width:719px){.hero{height:min(70svh,640px);min-height:430px}}
+#denoise{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  -webkit-mask-image:radial-gradient(112% 96% at 50% 44%,#000 52%,transparent 100%);
+  mask-image:radial-gradient(112% 96% at 50% 44%,#000 52%,transparent 100%);
+}
+.hero-foot{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:0 var(--gut) clamp(26px,5vh,54px);
+  display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:22px;
+  background:linear-gradient(transparent,rgba(0,0,0,.86) 58%);
+}
+.thesis{
+  margin:0;max-width:34ch;
+  font-size:clamp(1.05rem,1.9vw,1.5rem);line-height:1.5;color:var(--bone);font-weight:300;
+}
+.thesis em{font-style:italic;color:var(--white)}
+.readout{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 30px;
+  font-family:var(--util);font-size:10.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--slate);
+}
+.readout b{display:block;color:var(--ash);font-weight:400;font-size:9.5px;letter-spacing:.26em}
+.readout span{color:var(--bone)}
+@media (min-width:900px){.readout{grid-template-columns:repeat(4,auto);text-align:right}}
+
+/* --- shared band rhythm. One rule owns section spacing. --- */
+.band{padding:var(--band) var(--gut);position:relative}
+.band + .band{border-top:1px solid var(--iron)}
+.wrap{max-width:1180px;margin:0 auto;width:100%}
+
+.eyebrow{
+  display:flex;align-items:center;gap:16px;
+  font-family:var(--util);font-size:10.5px;letter-spacing:.36em;text-transform:uppercase;color:var(--slate);
+  margin:0 0 clamp(26px,4vh,44px);
+}
+.eyebrow:after{content:"";flex:1;height:1px;background:var(--iron)}
+h2{
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(1.45rem,3.4vw,2.5rem);line-height:1.12;letter-spacing:-.02em;
+  color:var(--white);margin:0 0 .55em;text-transform:uppercase;
+}
+h3{font-family:var(--display);font-weight:500;font-size:clamp(.95rem,1.5vw,1.12rem);
+  line-height:1.3;letter-spacing:-.01em;color:var(--white);margin:0}
+p{margin:0 0 1.05em}
+p:last-child{margin-bottom:0}
+a{color:inherit}
+
+/* --- opening statement --- */
+.lead{max-width:30ch;font-size:clamp(1.5rem,3.6vw,2.6rem);line-height:1.32;color:var(--white);font-weight:200;letter-spacing:-.015em}
+.said{display:grid;gap:clamp(26px,4vw,64px);grid-template-columns:1fr}
+@media (min-width:900px){.said{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}}
+.said-body{max-width:60ch}
+.said-body p{color:var(--smoke)}
+.said-body strong{color:var(--bone);font-weight:400}
+
+/* --- now: three live things --- */
+.now{display:grid;gap:1px;background:var(--iron);border:1px solid var(--iron)}
+@media (min-width:860px){.now{grid-template-columns:repeat(3,1fr)}}
+.card{
+  background:var(--black);padding:clamp(24px,3vw,34px);
+  display:flex;flex-direction:column;gap:14px;position:relative;
+  transition:background .3s ease;
+}
+.card:before{
+  content:"";position:absolute;left:0;top:0;height:2px;width:0;background:var(--white);
+  transition:width .5s cubic-bezier(.2,.8,.2,1);
+}
+.card:hover,.card:focus-within{background:var(--coal)}
+.card:hover:before,.card:focus-within:before{width:100%}
+.card-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.tag{font-family:var(--util);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--slate);white-space:nowrap}
+.card p{font-size:.95rem;line-height:1.62;color:var(--smoke)}
+.card-link{
+  margin-top:auto;font-family:var(--util);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ash);text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+  transition:color .2s,gap .2s;
+}
+.card-link:hover,.card-link:focus-visible{color:var(--white);gap:15px}
+.card-link.dead{pointer-events:none}
+
+/* --- the trace: one row per era, glyph = the signal it read --- */
+.trace{border-top:1px solid var(--iron)}
+.era{
+  display:grid;gap:10px 26px;
+  grid-template-columns:1fr;
+  padding:clamp(24px,3.4vw,38px) 0;
+  border-bottom:1px solid var(--iron);
+  align-items:start;
+}
+@media (min-width:820px){
+  .era{grid-template-columns:96px 118px minmax(0,1fr);gap:0 34px;padding-left:6px}
+}
+.era-sig{color:var(--slate);transition:color .45s ease}
+.era:hover .era-sig{color:var(--white)}
+.era-sig svg{width:88px;height:30px;display:block;overflow:visible}
+.era-sig path,.era-sig polyline,.era-sig circle,.era-sig rect,.era-sig line{
+  fill:none;stroke:currentColor;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.era-sig .dot{fill:currentColor;stroke:none}
+.era-sig .dash{stroke-dasharray:3 2.4}
+.era-sig [data-draw]{stroke-dasharray:1;stroke-dashoffset:1}
+.era.in .era-sig [data-draw]{stroke-dashoffset:0;transition:stroke-dashoffset 1.15s cubic-bezier(.35,.9,.3,1) var(--d,0s)}
+.era-when{font-family:var(--util);font-size:11px;letter-spacing:.16em;color:var(--slate);padding-top:4px;white-space:nowrap}
+.era-what{max-width:66ch}
+.era-role{
+  font-family:var(--util);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);
+  margin:6px 0 12px;
+}
+.era-what p{font-size:.97rem;line-height:1.66}
+.era-lens{
+  display:inline-block;margin-left:10px;color:var(--slate);
+  font-family:var(--util);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+}
+
+/* --- newztiq chapter --- */
+.chapter{background:var(--coal)}
+.chapter .wrap{display:grid;gap:clamp(28px,4vw,60px);grid-template-columns:1fr}
+@media (min-width:960px){.chapter .wrap{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr)}}
+.chapter h2{font-size:clamp(1.9rem,5.4vw,3.6rem)}
+.stamp{
+  display:inline-block;border:1px solid var(--ash);padding:7px 13px;
+  font-family:var(--util);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--smoke);
+}
+.chapter-body{max-width:64ch}
+.chapter-body p{font-size:1.03rem}
+.pull{
+  margin:1.9em 0;padding-left:22px;border-left:1px solid var(--ash);
+  font-size:clamp(1.15rem,2.1vw,1.5rem);line-height:1.42;color:var(--white);font-weight:200;font-style:italic;
+}
+.built{
+  list-style:none;margin:2em 0 0;padding:18px 0 0;
+  border-top:1px solid var(--iron);
+  display:flex;flex-wrap:wrap;align-items:center;
+  font-family:var(--util);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--slate);
+  line-height:2.1;
+}
+.built li{display:inline-flex;align-items:center}
+.built li:not(:last-child):after{content:"/";color:var(--ash);margin:0 13px}
+
+/* --- archive --- */
+.arch{border-top:1px solid var(--iron)}
+.arch-row{
+  display:grid;grid-template-columns:1fr;gap:6px 28px;
+  padding:20px 0;border-bottom:1px solid var(--iron);
+  text-decoration:none;color:inherit;position:relative;
+  transition:padding-left .35s cubic-bezier(.2,.8,.2,1),color .3s;
+}
+@media (min-width:820px){.arch-row{grid-template-columns:210px minmax(0,1fr) 22px;align-items:baseline;gap:0 34px}}
+.arch-row:hover,.arch-row:focus-visible{padding-left:16px;color:var(--white)}
+.arch-row:before{
+  content:"";position:absolute;left:0;top:50%;width:0;height:1px;background:var(--white);
+  transform:translateY(-50%);transition:width .35s cubic-bezier(.2,.8,.2,1);
+}
+.arch-row:hover:before,.arch-row:focus-visible:before{width:8px}
+.arch-name{font-family:var(--display);font-weight:500;font-size:.98rem;color:var(--white);letter-spacing:-.01em}
+.arch-desc{font-size:.95rem;color:var(--smoke);line-height:1.6}
+.arch-go{font-family:var(--util);font-size:11px;color:var(--ash);display:none}
+@media (min-width:820px){.arch-go{display:block;text-align:right}}
+
+/* --- stack --- */
+.stack{display:grid;gap:26px;grid-template-columns:1fr}
+@media (min-width:760px){.stack{grid-template-columns:repeat(3,1fr);gap:34px}}
+.stack h4{
+  margin:0 0 14px;font-family:var(--util);font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ash);font-weight:400;
+}
+.chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:7px}
+.chips li{
+  border:1px solid var(--iron);padding:6px 11px;
+  font-family:var(--util);font-size:10.5px;letter-spacing:.1em;color:var(--smoke);
+  transition:border-color .25s,color .25s;
+}
+.chips li:hover{border-color:var(--slate);color:var(--white)}
+
+/* --- contact --- */
+.contact{padding-bottom:calc(var(--band) * .7)}
+.reach{border-top:1px solid var(--iron)}
+.reach a{
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:clamp(16px,2.4vw,26px) 0;border-bottom:1px solid var(--iron);
+  text-decoration:none;color:var(--bone);
+  font-family:var(--display);font-weight:500;
+  font-size:clamp(1.05rem,2.8vw,1.9rem);letter-spacing:-.02em;
+  transition:color .3s,padding-left .35s cubic-bezier(.2,.8,.2,1);
+  word-break:break-word;
+}
+.reach a:hover,.reach a:focus-visible{color:var(--white);padding-left:14px}
+.reach .where{font-family:var(--util);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--ash)}
+
+footer{
+  padding:26px var(--gut) 34px;border-top:1px solid var(--iron);
+  display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:space-between;
+  font-family:var(--util);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ash);
+}
+
+/* --- reveal --- */
+.rise{opacity:0;transform:translateY(22px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.8,.2,1)}
+.rise.in{opacity:1;transform:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:1px solid var(--white);outline-offset:4px}
+
+@media (prefers-reduced-motion:reduce){
+  .grain{animation:none}
+  .rise{opacity:1;transform:none;transition:none}
+  .era.in .era-sig [data-draw]{transition:none}
+  .era-sig [data-draw]{stroke-dashoffset:0}
+  .card:before,.arch-row,.reach a,.card-link{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="vig" aria-hidden="true"></div>
+
+<div class="rail" aria-hidden="true">
+  <div class="rail-txt">Manish Kulariya / Single Channel</div>
+  <div class="rail-mark" id="railMark"></div>
+  <div class="rail-pct" id="railPct">000</div>
+</div>
+
+<div class="bar" id="bar">
+  <span class="bar-name">MK</span>
+  <nav class="bar-nav">
+    <a href="#now">Now</a>
+    <a href="#trace">Trace</a>
+    <a href="#newztiq">NewzTiQ</a>
+    <a href="#archive">Archive</a>
+    <a href="#contact" class="keep">Contact</a>
+  </nav>
+</div>
+
+<header class="hero" id="top">
+  <h1 class="sr-only">Manish Kulariya</h1>
+  <canvas id="denoise" aria-hidden="true"></canvas>
+  <div class="hero-foot">
+    <p class="thesis">Ten years pulling signal out of noise. Heartbeats, retinas, handwriting, video, the news, and now <em>agents</em>.</p>
+    <ul class="readout">
+      <li><b>Based</b><span>Bangalore, India</span></li>
+      <li><b>Since</b><span>2017</span></li>
+      <li><b>Trained</b><span>NIT Raipur, 2016</span></li>
+      <li><b>Building</b><span>Rust agents</span></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+
+<section class="band" id="about">
+  <div class="wrap said">
+    <p class="lead rise">Every job I have had was the same job: take a messy real world signal and return one thing a person can act on.</p>
+    <div class="said-body rise">
+      <p>The signal kept changing shape. It was a noisy ECG lead in a cardiology clinic. Then a retina, then a patch of skin. Then a doctor's handwriting. Then a warehouse camera and the people moving through it. Then a face at a gate. Then a firehose of news, which is when I stopped taking the problem to work and started a company around it.</p>
+      <p>The company was <strong>NewzTiQ</strong>. I ran it for two years and closed it in June 2026. Now the signal is a model's own output, and the thing I am building reads it: coding agents, small and fast, written in Rust, with security treated as a design constraint rather than a patch.</p>
+      <p>I am a machine learning engineer by training and a shipper by preference. Six companies, one of my own, and a decade of taking models from a notebook to something running on a GPU that someone is paying for.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="now">
+  <div class="wrap">
+    <p class="eyebrow rise">Currently building</p>
+    <div class="now rise">
+
+      <article class="card">
+        <div class="card-top"><h3>Hybris</h3><span class="tag">Rust</span></div>
+        <p>A coding agent ported from TypeScript to Rust at behavioral parity. Five crates: model layer, agent loop, TUI, coding agent, orchestrator. Correctness is not a claim here, it is a number: a separate harness runs it against the original on Terminal-Bench 2.1, SWE-Bench Pro, and DeepSWE and reports one Pass@1 each.</p>
+        <a class="card-link" href="https://github.com/mkulariya/hybris" target="_blank" rel="noopener">github / hybris <span aria-hidden="true">&rarr;</span></a>
+      </article>
+
+      <article class="card">
+        <div class="card-top"><h3>ZapClaw</h3><span class="tag">Rust</span></div>
+        <p>An agent runtime built security first. Bound to localhost by default instead of every interface, workspace confined and symlink safe, sandboxed with whatever the platform already provides, and layered guards against prompt injection. About 15MB of binary and under 256MB of memory, where the thing it replaces needs a node_modules tree and a gigabyte.</p>
+        <a class="card-link" href="https://github.com/mkulariya/zapclaw" target="_blank" rel="noopener">github / zapclaw <span aria-hidden="true">&rarr;</span></a>
+      </article>
+
+      <article class="card">
+        <div class="card-top"><h3>Deep research agent</h3><span class="tag">Small model</span></div>
+        <p>An autonomous research agent that runs on a small model instead of a frontier one. Parallel specialist passes over a topic, a knowledge graph it keeps between runs, verification before anything reaches the report. The open question is how much depth survives when the model is cheap enough to run all day.</p>
+        <span class="card-link dead">In progress, private</span>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="band" id="trace">
+  <div class="wrap">
+    <p class="eyebrow rise">The trace, 2012 to 2024</p>
+    <h2 class="rise">What the model was looking at</h2>
+    <div class="trace">
+
+      <article class="era rise">
+        <div class="era-sig" aria-hidden="true">
+          <svg viewBox="0 0 88 30"><g class="dash"><line data-draw x1="4" y1="6" x2="84" y2="6"/><line data-draw style="--d:.06s" x1="4" y1="15" x2="84" y2="15"/><line data-draw style="--d:.12s" x1="4" y1="24" x2="84" y2="24"/></g><circle class="dot" cx="22" cy="15" r="1.7"/><circle class="dot" cx="52" cy="6" r="1.7"/><circle class="dot" cx="70" cy="24" r="1.7"/></svg>
+        </div>
+        <div class="era-when">2012 - 2016</div>
+        <div class="era-what">
+          <h3>National Institute of Technology, Raipur</h3>
+          <p class="era-role">B.Tech, Information Technology <span class="era-lens">Lens: none yet</span></p>
+          <p>Four years of fundamentals in Chhattisgarh, before any of this had a name attached to it.</p>
+        </div>
+      </article>
+
+      <article class="era rise">
+        <div class="era-sig" aria-hidden="true">
+          <svg viewBox="0 0 88 30"><polyline data-draw points="0,17 7,17 9,14 11,20 13,17 19,17 21,18 23,4 25,27 27,15 31,15 33,11 36,17 44,17 51,17 53,14 55,20 57,17 63,17 65,18 67,4 69,27 71,15 75,15 77,11 80,17 88,17"/></svg>
+        </div>
+        <div class="era-when">2017 - 2018</div>
+        <div class="era-what">
+          <h3>Tricog Health</h3>
+          <p class="era-role">Data Scientist <span class="era-lens">Lens: ECG</span></p>
+          <p>Myocardial infarction detection from ECG using CNNs, trained on both the raw signal and the printed image. R wave detection that had to answer two questions at once: is the beat there, and exactly where. A framework underneath it for paced beat detection, ECG measurement, trends, and summaries.</p>
+        </div>
+      </article>
+
+      <article class="era rise">
+        <div class="era-sig" aria-hidden="true">
+          <svg viewBox="0 0 88 30"><circle data-draw cx="17" cy="15" r="12"/><path data-draw style="--d:.1s" d="M11 15c2-5 8-6 11-2s1 9-4 9-8-3-7-7z"/><path data-draw style="--d:.2s" class="dash" d="M52 7c9-3 17 3 15 11s-14 10-19 4 -3-13 4-15z"/><circle class="dot" cx="61" cy="15" r="1.6"/></svg>
+        </div>
+        <div class="era-when">2019</div>
+        <div class="era-what">
+          <h3>Artelus</h3>
+          <p class="era-role">Data Scientist <span class="era-lens">Lens: retina and skin</span></p>
+          <p>Skin lesion classification into benign or a specific cancer type, from the image alone. A segmentation model that traced the lesion boundary precisely enough to be measured. Diabetic retinopathy staging from fundus images, across the full range from no DR to proliferative.</p>
+        </div>
+      </article>
+
+      <article class="era rise">
+        <div class="era-sig" aria-hidden="true">
+          <svg viewBox="0 0 88 30"><path data-draw d="M2 19c4-11 7 3 10-4s5 8 8 0 5 7 8-2 5 9 8 1"/><rect data-draw style="--d:.15s" class="dash" x="46" y="7" width="18" height="15"/><path data-draw style="--d:.25s" d="M69 12h16M69 18h11"/><line class="dash" x1="2" y1="26" x2="40" y2="26"/></svg>
+        </div>
+        <div class="era-when">2019 - 2020</div>
+        <div class="era-what">
+          <h3>HealthPlix</h3>
+          <p class="era-role">Data Scientist <span class="era-lens">Lens: handwriting and text</span></p>
+          <p>Recognition of handwritten prescriptions, which is the hardest legible handwriting problem there is. A text matching model that pulled the noise out of free text EMR fields. A search tool over clinical records where the user types a question and intent classification plus entity recognition turn it into an answer.</p>
+        </div>
+      </article>
+
+      <article class="era rise">
+        <div class="era-sig" aria-hidden="true">
+          <svg viewBox="0 0 88 30"><circle data-draw cx="18" cy="5" r="3"/><path data-draw style="--d:.08s" d="M18 8v9M18 11l-7 4M18 11l7 4M18 17l-5 9M18 17l5 9"/><circle class="dot" cx="11" cy="15" r="1.5"/><circle class="dot" cx="25" cy="15" r="1.5"/><circle class="dot" cx="18" cy="17" r="1.5"/><circle data-draw style="--d:.2s" cx="60" cy="6" r="3"/><path data-draw style="--d:.28s" d="M60 9v8M60 12l8 2M60 12l-7 5M60 17l-4 9M60 17l6 8"/><circle class="dot" cx="68" cy="14" r="1.5"/><circle class="dot" cx="53" cy="17" r="1.5"/></svg>
+        </div>
+        <div class="era-when">2020 - 2023</div>
+        <div class="era-what">
+          <h3>Drishti Technologies</h3>
+          <p class="era-role">Machine Learning Engineer <span class="era-lens">Lens: video and pose</span></p>
+          <p>Person detection and human pose estimation with YOLO-POSE. Cycle detection models on factory floors, trained semi supervised, with I3D and SlowFast doing the action recognition. GPU multiplexing on Nvidia DeepStream that took a serious bite out of the inference bill. And a continuous training framework that watched its own accuracy in production and triggered retraining when the world drifted, without anyone asking it to.</p>
+        </div>
+      </article>
+
+      <article class="era rise">
+        <div class="era-sig" aria-hidden="true">
+          <svg viewBox="0 0 88 30"><path data-draw d="M4 4h5M4 4v5M22 4h5M27 4v5M4 26h5M4 26v-5M22 26h5M27 26v-5"/><rect data-draw style="--d:.12s" class="dash" x="38" y="6" width="17" height="19"/><rect data-draw style="--d:.2s" x="64" y="8" width="16" height="16"/><circle class="dot" cx="69" cy="14" r="1.3"/><circle class="dot" cx="75" cy="14" r="1.3"/><path data-draw style="--d:.3s" d="M69 19h6"/></svg>
+        </div>
+        <div class="era-when">2023 - 2024</div>
+        <div class="era-what">
+          <h3>56 Secure</h3>
+          <p class="era-role">Senior Machine Learning Engineer <span class="era-lens">Lens: detection at the edge</span></p>
+          <p>Object detection mAP up 10 percent, using active learning to pick what was worth labelling, knowledge distillation to keep it small, and augmentation built for the specific domain rather than off the shelf. Yolov3-tiny, Yolov5s, and Yolov8 all evaluated against each other. Face recognition accuracy up 12 percent with MobileFaceNet, MTCNN, and synthetic faces filling the gaps in the real set.</p>
+        </div>
+      </article>
+
+      <article class="era rise">
+        <div class="era-sig" aria-hidden="true">
+          <svg viewBox="0 0 88 30"><path data-draw d="M2 5h20M2 10h14M2 15h22M2 20h11M2 25h17"/><path data-draw style="--d:.15s" class="dash" d="M30 15h22"/><path data-draw style="--d:.3s" d="M58 15h28" stroke-width="2.6"/><circle class="dot" cx="55" cy="15" r="1.8"/></svg>
+        </div>
+        <div class="era-when">2024 - 2026</div>
+        <div class="era-what">
+          <h3>NewzTiQ</h3>
+          <p class="era-role">Founder <span class="era-lens">Lens: the news firehose</span></p>
+          <p>My own company. Two years, the whole stack, one pair of hands. The chapter below is the honest version.</p>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="band chapter" id="newztiq">
+  <div class="wrap">
+    <div class="rise">
+      <p class="eyebrow">The company</p>
+      <h2>NewzTiQ</h2>
+      <span class="stamp">June 2024 to June 2026 / closed</span>
+    </div>
+    <div class="chapter-body rise">
+      <p>I left 56 Secure in April 2024 and started NewzTiQ that June. The idea was narrow on purpose. Instead of an infinite feed, a fixed daily digest. You told it how much time you had and what you cared about, it gave you exactly that much, summarized at the depth you asked for, and then it stopped.</p>
+      <p class="pull">Read exactly what you need, nothing more. The feed was never going to say that, so I built something that would.</p>
+      <p>I built all of it. An ingestion and classification pipeline running across hundreds of sources every morning. An editorial ranking layer that decided what actually mattered that day. Summarization at several depth levels, so the same story could be thirty seconds or five minutes. A deep research agent for going underneath a headline. A video digest generator. A Flutter app, signed and shipped. The web app, the landing pages, and a set of marketing agents that ran growth while I worked on the product.</p>
+      <p>It closed in June 2026. The product did what it promised. The habit it was fighting, the scroll, turned out to be stronger than the fix, and I would rather write that down plainly than dress it up as a pivot. Two years of owning every layer alone taught me more about shipping than the six years before it did, and it is the reason I now start with the runtime instead of the model.</p>
+      <ul class="built">
+        <li>Ingestion pipeline</li>
+        <li>Editorial ranking</li>
+        <li>Multi depth summaries</li>
+        <li>Deep research agent</li>
+        <li>Video digest</li>
+        <li>Flutter app, both stores</li>
+        <li>Web app</li>
+        <li>Marketing agents</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="archive">
+  <div class="wrap">
+    <p class="eyebrow rise">Also built</p>
+    <h2 class="rise">Side work that shipped</h2>
+    <div class="arch rise">
+
+      <a class="arch-row" href="https://github.com/mkulariya/synthora" target="_blank" rel="noopener">
+        <span class="arch-name">The Attention Layer</span>
+        <span class="arch-desc">A multi agent system that writes an AI magazine every week on its own. Ingests arXiv, Hugging Face and GitHub trending, keeps a knowledge graph of papers and benchmarks, runs a three phase editorial ranking, and lays out a print ready issue.</span>
+        <span class="arch-go" aria-hidden="true">&rarr;</span>
+      </a>
+
+      <a class="arch-row" href="https://mkulariya.github.io/agent-primer/" target="_blank" rel="noopener">
+        <span class="arch-name">Agent Primer</span>
+        <span class="arch-desc">A glossary course on agents. Forty terms planned, five minutes each, written so you leave knowing the idea, the thing people confuse it with, and where it fails.</span>
+        <span class="arch-go" aria-hidden="true">&rarr;</span>
+      </a>
+
+      <a class="arch-row" href="https://github.com/mkulariya/agent-eval" target="_blank" rel="noopener">
+        <span class="arch-name">agent-eval</span>
+        <span class="arch-desc">The benchmark harness behind Hybris. Terminal-Bench 2.1, SWE-Bench Pro and DeepSWE, same model and same tasks on both sides, one number out.</span>
+        <span class="arch-go" aria-hidden="true">&rarr;</span>
+      </a>
+
+      <a class="arch-row" href="https://github.com/mkulariya/sikshagemma" target="_blank" rel="noopener">
+        <span class="arch-name">ShikshaGemma</span>
+        <span class="arch-desc">A Hindi native science and maths tutor, Gemma 4 E4B fine tuned in two stages and quantised to run fully offline on a low end Android phone. Class 6 through MSc, JEE and NEET included.</span>
+        <span class="arch-go" aria-hidden="true">&rarr;</span>
+      </a>
+
+      <a class="arch-row" href="https://github.com/mkulariya/inkokora" target="_blank" rel="noopener">
+        <span class="arch-name">inkokora</span>
+        <span class="arch-desc">Kokoro 82M fine tuned for Indian English speech, with the accent, the entity names, and code mixing all handled rather than flattened.</span>
+        <span class="arch-go" aria-hidden="true">&rarr;</span>
+      </a>
+
+      <a class="arch-row" href="https://github.com/mkulariya/safar-e-rail" target="_blank" rel="noopener">
+        <span class="arch-name">Safar-e-Rail</span>
+        <span class="arch-desc">An endless train journey across India from an AC 2-tier side lower berth. Ten routes, landscape rolling past the window, live radio on ghazals or lo-fi. Not useful. Worth building anyway.</span>
+        <span class="arch-go" aria-hidden="true">&rarr;</span>
+      </a>
+
+      <a class="arch-row" href="https://github.com/mkulariya/mindbuddy" target="_blank" rel="noopener">
+        <span class="arch-name">MindBuddy</span>
+        <span class="arch-desc">A privacy first journal and planner. Voice capture, automatic tagging of what you wrote, mood and habit tracking, with the AI running on device so nothing leaves it.</span>
+        <span class="arch-go" aria-hidden="true">&rarr;</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<section class="band" id="stack">
+  <div class="wrap">
+    <p class="eyebrow rise">Tools</p>
+    <div class="stack rise">
+      <div>
+        <h4>Languages</h4>
+        <ul class="chips"><li>Python</li><li>Rust</li><li>TypeScript</li><li>Dart</li><li>SQL</li></ul>
+      </div>
+      <div>
+        <h4>Modelling</h4>
+        <ul class="chips"><li>PyTorch</li><li>TensorFlow</li><li>Keras</li><li>scikit-learn</li><li>Pandas</li><li>YOLO</li><li>LoRA / Unsloth</li><li>LangGraph</li></ul>
+      </div>
+      <div>
+        <h4>Systems</h4>
+        <ul class="chips"><li>Docker</li><li>Kubeflow</li><li>Nvidia DeepStream</li><li>TensorRT</li><li>Cloudflare Workers</li><li>Flutter</li><li>SQLite / LanceDB</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band contact" id="contact">
+  <div class="wrap">
+    <p class="eyebrow rise">Get in touch</p>
+    <h2 class="rise">Say something</h2>
+    <div class="reach rise">
+      <a href="mailto:kulariya.manish@gmail.com">kulariya.manish@gmail.com <span class="where">Email</span></a>
+      <a href="https://x.com/MKulria" target="_blank" rel="noopener">@MKulria <span class="where">X</span></a>
+      <a href="https://www.linkedin.com/in/manish-kulariya" target="_blank" rel="noopener">manish-kulariya <span class="where">LinkedIn</span></a>
+      <a href="https://github.com/mkulariya" target="_blank" rel="noopener">mkulariya <span class="where">GitHub</span></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>Manish Kulariya</span>
+  <span>Bangalore, India</span>
+  <span>Black, white, and grey only</span>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- reveal ---------- */
+  var risers = document.querySelectorAll('.rise, .era');
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    },{rootMargin:'0px 0px -12% 0px',threshold:.08});
+    risers.forEach(function(el){ io.observe(el); });
+  } else {
+    risers.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- rail ruler + top bar ---------- */
+  var mark = document.getElementById('railMark');
+  var pct  = document.getElementById('railPct');
+  var bar  = document.getElementById('bar');
+  var hero = document.getElementById('top');
+  var ticking = false;
+  function onScroll(){
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    if(mark) mark.style.transform = 'translateY(' + (p * (window.innerHeight - 2)) + 'px)';
+    if(pct)  pct.textContent = String(Math.round(p * 100)).padStart(3,'0');
+    if(bar)  bar.classList.toggle('on', window.scrollY > hero.offsetHeight * 0.7);
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){
+    if(!ticking){ ticking = true; requestAnimationFrame(onScroll); }
+  }, {passive:true});
+  onScroll();
+
+  /* ---------- the hero: a name resolving out of sensor noise ----------
+     One offscreen grid, one pixel per cell. Text is rasterised at grid
+     resolution so the letterforms are quantised by construction, then
+     each cell mixes its target with decaying noise and gets pushed
+     through a 5 step grey ramp with an ordered dither offset.        */
+  var canvas = document.getElementById('denoise');
+  if(!canvas || !canvas.getContext) return;
+  var ctx  = canvas.getContext('2d');
+  var grid = document.createElement('canvas');
+  var g    = grid.getContext('2d', {willReadFrequently:true});
+  if(!ctx || !g) return;
+
+  var cols=0, rows=0, cellPx=7, mask=null, img=null, W=0, H=0;
+  var bayer = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+  var ramp  = [0, 44, 92, 166, 255];
+  var start = 0, running = true, visible = true;
+  var px = -999, py = -999, pointerOn = false;
+
+  function build(){
+    var r = canvas.getBoundingClientRect();
+    W = Math.max(320, Math.round(r.width));
+    H = Math.max(200, Math.round(r.height));
+    cellPx = W < 640 ? 6 : (W < 1100 ? 7 : 8);
+    cols = Math.max(40, Math.floor(W / cellPx));
+    rows = Math.max(20, Math.floor(H / cellPx));
+
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width  = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.imageSmoothingEnabled = false;
+
+    grid.width = cols; grid.height = rows;
+    g.setTransform(1,0,0,1,0,0);
+    g.clearRect(0,0,cols,rows);
+    g.fillStyle = '#fff';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+
+    var lines = ['MANISH','KULARIYA'];
+    var fam = '"Martian Mono","IBM Plex Mono",monospace';
+    var fitW = W < 720 ? 0.93 : 0.86;
+    var size = rows * 0.30;
+    for(var k=0;k<60;k++){
+      g.font = '700 ' + size.toFixed(2) + 'px ' + fam;
+      var wmax = 0;
+      for(var j=0;j<lines.length;j++) wmax = Math.max(wmax, g.measureText(lines[j]).width);
+      if(wmax > cols * fitW){ size *= 0.94; } else { break; }
+    }
+    var lh = size * 1.16;
+    var y0 = rows * (W < 720 ? 0.41 : 0.43) - ((lines.length - 1) * lh) / 2;
+    for(var i=0;i<lines.length;i++) g.fillText(lines[i], cols/2, y0 + i*lh);
+
+    var d = g.getImageData(0,0,cols,rows).data;
+    mask = new Float32Array(cols*rows);
+    for(var n=0;n<cols*rows;n++) mask[n] = d[n*4+3] / 255;
+    img = g.createImageData(cols, rows);
+  }
+
+  function paint(now){
+    if(!running) return;
+    if(!start) start = now;
+    var t = (now - start) / 2600;
+    var p = reduce ? 1 : (t >= 1 ? 1 : 1 - Math.pow(1 - t, 3));
+    var noise = 1 - p;
+
+    /* a scan sweep, once every seven seconds, like a sensor readout */
+    var sweep = reduce ? -9 : ((now / 7000) % 1) * (rows + 30) - 15;
+
+    var pxc = px / cellPx, pyc = py / cellPx;
+    var data = img.data, i = 0;
+
+    for(var y=0;y<rows;y++){
+      var dsweep = Math.abs(y - sweep);
+      var sBoost = dsweep < 3 ? (1 - dsweep/3) * 0.16 : 0;
+      var by = bayer[y & 3];
+      for(var x=0;x<cols;x++){
+        var v = mask[i] * p;
+        if(noise > 0.001) v += (Math.random() * 0.95 - 0.10) * noise;
+        else v += (Math.random() - 0.5) * 0.05;      /* resting sensor noise */
+        v += sBoost;
+        if(pointerOn && !reduce){
+          var dx = x - pxc, dy = y - pyc;
+          var dd = dx*dx + dy*dy;
+          if(dd < 900) v += (Math.random() - 0.35) * (1 - dd/900) * 0.7;  /* touch re-noises the image */
+        }
+        v += (by[x & 3] / 16) * 0.17 - 0.085;
+        var lvl = v <= 0.13 ? 0 : (v < 0.33 ? 1 : (v < 0.56 ? 2 : (v < 0.79 ? 3 : 4)));
+        var c = ramp[lvl];
+        var o = i << 2;
+        data[o] = c; data[o+1] = c; data[o+2] = c; data[o+3] = 255;
+        i++;
+      }
+    }
+    g.putImageData(img, 0, 0);
+    ctx.clearRect(0,0,W,H);
+    ctx.drawImage(grid, 0, 0, cols, rows, 0, 0, W, H);
+
+    if(reduce && p >= 1 && !pointerOn){ running = false; return; }
+    requestAnimationFrame(paint);
+  }
+
+  function kick(){
+    if(!running){ running = true; requestAnimationFrame(paint); }
+  }
+
+  canvas.addEventListener('pointermove', function(e){
+    var r = canvas.getBoundingClientRect();
+    px = e.clientX - r.left; py = e.clientY - r.top;
+    pointerOn = true; kick();
+  });
+  canvas.addEventListener('pointerleave', function(){ pointerOn = false; });
+
+  var rt;
+  window.addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){ build(); kick(); }, 160);
+  });
+
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){
+      visible = es[0].isIntersecting;
+      running = visible;
+      if(visible) requestAnimationFrame(paint);
+    },{threshold:0}).observe(canvas);
+  }
+
+  function boot(){ build(); start = 0; running = true; requestAnimationFrame(paint); }
+  if(document.fonts && document.fonts.load){
+    Promise.race([
+      document.fonts.load('700 40px "Martian Mono"').then(function(){ return document.fonts.ready; }),
+      new Promise(function(res){ setTimeout(res, 1400); })
+    ]).then(boot, boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+</body>
+</html>
