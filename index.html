@@ -16,8 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Martian+Mono:wght@500;700&family=Newsreader:ital,opsz,wght@0,6..72,200;0,6..72,300;0,6..72,400;1,6..72,300&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   SINGLE CHANNEL
-   Palette is one channel wide. No hue anywhere, on purpose.
+   Palette is greyscale only. No hue anywhere, on purpose.
    ============================================================ */
 :root{
   --black:#000000;
@@ -54,7 +53,7 @@ body{
 }
 ::selection{background:var(--white);color:var(--black)}
 
-/* --- film grain over the whole single channel --- */
+/* --- film grain over the whole page --- */
 .grain{
   position:fixed;inset:-50%;
   z-index:9;pointer-events:none;
@@ -332,7 +331,7 @@ footer{
 <div class="vig" aria-hidden="true"></div>
 
 <div class="rail" aria-hidden="true">
-  <div class="rail-txt">Manish Kulariya / Single Channel</div>
+  <div class="rail-txt">Manish Kulariya / Bangalore, India</div>
   <div class="rail-mark" id="railMark"></div>
   <div class="rail-pct" id="railPct">000</div>
 </div>
@@ -355,7 +354,7 @@ footer{
     <p class="thesis">Ten years pulling signal out of noise. Heartbeats, retinas, handwriting, video, the news, and now <em>agents</em>.</p>
     <ul class="readout">
       <li><b>Based</b><span>Bangalore, India</span></li>
-      <li><b>Since</b><span>2017</span></li>
+      <li><b>Since</b><span>2016</span></li>
       <li><b>Trained</b><span>NIT Raipur, 2016</span></li>
       <li><b>Building</b><span>Rust agents</span></li>
     </ul>
@@ -382,7 +381,7 @@ footer{
 
       <article class="card">
         <div class="card-top"><h3>Hybris</h3><span class="tag">Rust</span></div>
-        <p>A coding agent ported from TypeScript to Rust at behavioral parity. Five crates: model layer, agent loop, TUI, coding agent, orchestrator. Correctness is not a claim here, it is a number: a separate harness runs it against the original on Terminal-Bench 2.1, SWE-Bench Pro, and DeepSWE and reports one Pass@1 each.</p>
+        <p>An agent built from scratch for small and local models. A frontier model can recover from its own bad step, so the harness around it can afford to be loose. A small model cannot, so Hybris does that work in the scaffolding: tight tool contracts, explicit state, recovery designed in rather than assumed. The target is a model running on your own machine finishing the task a frontier model finishes.</p>
         <a class="card-link" href="https://github.com/mkulariya/hybris" target="_blank" rel="noopener">github / hybris <span aria-hidden="true">&rarr;</span></a>
       </article>
 
@@ -540,33 +539,9 @@ footer{
         <span class="arch-go" aria-hidden="true">&rarr;</span>
       </a>
 
-      <a class="arch-row" href="https://github.com/mkulariya/agent-eval" target="_blank" rel="noopener">
-        <span class="arch-name">agent-eval</span>
-        <span class="arch-desc">The benchmark harness behind Hybris. Terminal-Bench 2.1, SWE-Bench Pro and DeepSWE, same model and same tasks on both sides, one number out.</span>
-        <span class="arch-go" aria-hidden="true">&rarr;</span>
-      </a>
-
       <a class="arch-row" href="https://github.com/mkulariya/sikshagemma" target="_blank" rel="noopener">
         <span class="arch-name">ShikshaGemma</span>
         <span class="arch-desc">A Hindi native science and maths tutor, Gemma 4 E4B fine tuned in two stages and quantised to run fully offline on a low end Android phone. Class 6 through MSc, JEE and NEET included.</span>
-        <span class="arch-go" aria-hidden="true">&rarr;</span>
-      </a>
-
-      <a class="arch-row" href="https://github.com/mkulariya/inkokora" target="_blank" rel="noopener">
-        <span class="arch-name">inkokora</span>
-        <span class="arch-desc">Kokoro 82M fine tuned for Indian English speech, with the accent, the entity names, and code mixing all handled rather than flattened.</span>
-        <span class="arch-go" aria-hidden="true">&rarr;</span>
-      </a>
-
-      <a class="arch-row" href="https://github.com/mkulariya/safar-e-rail" target="_blank" rel="noopener">
-        <span class="arch-name">Safar-e-Rail</span>
-        <span class="arch-desc">An endless train journey across India from an AC 2-tier side lower berth. Ten routes, landscape rolling past the window, live radio on ghazals or lo-fi. Not useful. Worth building anyway.</span>
-        <span class="arch-go" aria-hidden="true">&rarr;</span>
-      </a>
-
-      <a class="arch-row" href="https://github.com/mkulariya/mindbuddy" target="_blank" rel="noopener">
-        <span class="arch-name">MindBuddy</span>
-        <span class="arch-desc">A privacy first journal and planner. Voice capture, automatic tagging of what you wrote, mood and habit tracking, with the AI running on device so nothing leaves it.</span>
         <span class="arch-go" aria-hidden="true">&rarr;</span>
       </a>
 
@@ -580,7 +555,7 @@ footer{
     <div class="stack rise">
       <div>
         <h4>Languages</h4>
-        <ul class="chips"><li>Python</li><li>Rust</li><li>TypeScript</li><li>Dart</li><li>SQL</li></ul>
+        <ul class="chips"><li>Python</li><li>Rust</li><li>Dart</li><li>SQL</li></ul>
       </div>
       <div>
         <h4>Modelling</h4>

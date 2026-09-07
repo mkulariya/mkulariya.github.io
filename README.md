@@ -7,10 +7,10 @@ webfonts.
 
 ## Design
 
-*Single Channel.* Pure greyscale, black through white, no hue anywhere. The hero name is
-rasterised into a low resolution grid and resolved out of sensor noise in real time on a canvas:
-each cell mixes its target value with decaying noise, then gets pushed through a five step grey
-ramp with an ordered Bayer dither offset. Pointer movement re-noises the image locally.
+Strict greyscale, black through white, no hue anywhere. The hero name is rasterised into a low
+resolution grid and resolved out of sensor noise in real time on a canvas: each cell mixes its
+target value with decaying noise, then gets pushed through a five step grey ramp with an ordered
+Bayer dither offset. Pointer movement re-noises the image locally.
 
 Each career row carries a small hand drawn SVG of the signal that era actually read: an ECG trace,
 a fundus and a lesion contour, a handwriting scrawl with an entity box, pose skeletons, bounding
